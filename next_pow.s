@@ -162,17 +162,23 @@ next_pow2_builtin:
 	.size	next_pow2_builtin, .-next_pow2_builtin
 	.section	.rodata.str1.1,"aMS",@progbits,1
 .LC0:
-	.string	"Enter a number (uint64_t):"
+	.string	"Enter a number x (uint64_t):"
 .LC1:
-	.string	"__builtin_clzl(0) = %d\n"
+	.string	"%ld"
 .LC2:
-	.string	"Using dichotomy: %ld\n"
+	.string	"__builtin_clzl(0) = %d\n"
 .LC3:
-	.string	"Using bitshift_origin: %ld\n"
+	.string	"__builtin_clzl(x) = %d\n"
 .LC4:
-	.string	"Using bitshift_new: %ld\n"
+	.string	"Using dichotomy: %ld\n"
 .LC5:
+	.string	"Using bitshift_origin: %ld\n"
+.LC6:
+	.string	"Using bitshift_new: %ld\n"
+.LC7:
 	.string	"Using builtin: %ld\n"
+.LC8:
+	.string	"\n"
 	.section	.text.startup,"ax",@progbits
 	.p2align 4
 	.globl	main
@@ -188,24 +194,28 @@ main:
 	pushq	%r14
 	.cfi_def_cfa_offset 24
 	.cfi_offset 14, -24
-	leaq	.LC1(%rip), %r14
 	pushq	%r13
 	.cfi_def_cfa_offset 32
 	.cfi_offset 13, -32
-	leaq	.LC2(%rip), %r13
+	leaq	.LC1(%rip), %r13
 	pushq	%r12
 	.cfi_def_cfa_offset 40
 	.cfi_offset 12, -40
-	leaq	.LC3(%rip), %r12
+	leaq	.LC2(%rip), %r12
 	pushq	%rbp
 	.cfi_def_cfa_offset 48
 	.cfi_offset 6, -48
+	leaq	.LC3(%rip), %rbp
 	pushq	%rbx
 	.cfi_def_cfa_offset 56
 	.cfi_offset 3, -56
 	movl	$1, %ebx
-	subq	$8, %rsp
-	.cfi_def_cfa_offset 64
+	subq	$24, %rsp
+	.cfi_def_cfa_offset 80
+	movq	%fs:40, %rax
+	movq	%rax, 8(%rsp)
+	xorl	%eax, %eax
+	movq	%rsp, %r14
 	.p2align 4,,10
 	.p2align 3
 .L25:
@@ -213,81 +223,94 @@ main:
 	movl	$1, %edi
 	xorl	%eax, %eax
 	call	__printf_chk@PLT
-	movl	$64, %edx
 	movq	%r14, %rsi
+	movq	%r13, %rdi
+	xorl	%eax, %eax
+	call	__isoc99_scanf@PLT
+	movl	$64, %edx
+	movq	%r12, %rsi
 	xorl	%eax, %eax
 	movl	$1, %edi
 	call	__printf_chk@PLT
+	bsrq	(%rsp), %rdx
+	movq	%rbp, %rsi
+	xorl	%eax, %eax
+	movl	$1, %edi
+	xorl	$63, %edx
+	call	__printf_chk@PLT
+	movq	(%rsp), %r8
 	movl	$63, %eax
-	xorl	%edx, %edx
+	xorl	%esi, %esi
 .L20:
-	movzbl	%dl, %esi
+	movzbl	%sil, %edi
 	jmp	.L21
 	.p2align 4,,10
 	.p2align 3
 .L23:
 	movzbl	%al, %ecx
-	movq	%rbx, %r10
-	xorl	%ebp, %ebp
-	addl	%esi, %ecx
+	movq	%rbx, %rdx
+	addl	%edi, %ecx
 	sarl	%ecx
-	salq	%cl, %r10
-	movl	%ecx, %edi
-	cmpq	%r10, %rbp
-	jnb	.L30
+	salq	%cl, %rdx
+	movl	%ecx, %r9d
+	cmpq	%rdx, %r8
+	jnb	.L32
 	movl	%ecx, %eax
 .L21:
-	cmpb	%dl, %al
+	cmpb	%sil, %al
 	ja	.L23
-	movq	%rbx, %r10
-	movl	%esi, %ecx
-	salq	%cl, %r10
+	movq	%rbx, %rdx
+	movl	%edi, %ecx
+	salq	%cl, %rdx
 .L22:
-	movq	%r10, %rdx
-	movq	%r13, %rsi
+	leaq	.LC4(%rip), %rsi
 	movl	$1, %edi
-	xorl	%ebp, %ebp
 	xorl	%eax, %eax
 	call	__printf_chk@PLT
-	movq	%rbp, %rdi
-	movq	%r12, %rsi
+	movq	(%rsp), %rdi
+	leaq	.LC5(%rip), %rsi
 	call	next_pow2_bitshift_origin
 	movl	$1, %edi
 	movq	%rax, %rdx
 	xorl	%eax, %eax
 	call	__printf_chk@PLT
-	movq	%rbp, %rdi
-	leaq	.LC4(%rip), %rsi
+	movq	(%rsp), %rdi
+	leaq	.LC6(%rip), %rsi
 	call	next_pow2_bitshift_new
 	movl	$1, %edi
 	movq	%rax, %rdx
 	xorl	%eax, %eax
 	call	__printf_chk@PLT
+	movq	(%rsp), %rax
 	movl	$1, %edx
-	testq	%rbp, %rbp
+	testq	%rax, %rax
 	je	.L24
 	movabsq	$-9223372036854775808, %rdx
-	bsrq	%rbp, %rax
-	xorq	$63, %rax
-	movl	%eax, %ecx
+	bsrq	%rax, %rsi
+	xorq	$63, %rsi
+	movl	%esi, %ecx
 	shrq	%cl, %rdx
-	cmpq	%rdx, %rbp
+	cmpq	%rdx, %rax
 	je	.L24
 	movl	$64, %ecx
 	movq	%rbx, %rdx
-	subl	%eax, %ecx
+	subl	%esi, %ecx
 	salq	%cl, %rdx
 .L24:
-	leaq	.LC5(%rip), %rsi
+	leaq	.LC7(%rip), %rsi
+	movl	$1, %edi
+	xorl	%eax, %eax
+	call	__printf_chk@PLT
+	leaq	.LC8(%rip), %rsi
 	movl	$1, %edi
 	xorl	%eax, %eax
 	call	__printf_chk@PLT
 	jmp	.L25
 	.p2align 4,,10
 	.p2align 3
-.L30:
+.L32:
 	jbe	.L22
-	leal	1(%rdi), %edx
+	leal	1(%r9), %esi
 	jmp	.L20
 	.cfi_endproc
 .LFE28:

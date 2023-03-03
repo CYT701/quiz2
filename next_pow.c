@@ -67,13 +67,15 @@ uint64_t next_pow2_builtin(uint64_t x) {
 int main() {
   uint64_t x;
   while (1) {
-    printf("Enter a number (uint64_t):");
+    printf("Enter a number x (uint64_t):");
     scanf("%ld", &x);
-    printf("__builtin_clzl(0) = %d\n", __builtin_clzl(0));
+	printf("__builtin_clzl(0) = %d\n", __builtin_clzl(0));
+    printf("__builtin_clzl(x) = %d\n", __builtin_clzl(x));
     printf("Using dichotomy: %ld\n", next_pow2_dichotomy(x));
     printf("Using bitshift_origin: %ld\n", next_pow2_bitshift_origin(x));
     printf("Using bitshift_new: %ld\n", next_pow2_bitshift_new(x));
     printf("Using builtin: %ld\n", next_pow2_builtin(x));
+	printf("\n");
   }
   return 0;
 }
