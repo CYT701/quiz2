@@ -22,12 +22,25 @@ int concatenatedBinary(int n) {
   return ans;
 }
 
+int using_builtin(int n) {
+  const int M = 1e9 + 7;
+  int len = 0;
+  long ans = 0;
+  for (int i = 1; i <= n; i++) {
+    if (__builtin_clz(i) + __builtin_ctz(i) == 31)
+      len = __builtin_ffs(i);
+    ans = (i | (ans << len)) % M;
+  }
+  return ans;
+}
+
 int main() {
   int n;
   while (1) {
     printf("Enter a number (int):");
     scanf("%d", &n);
-    printf("The answer is %d\n", concatenatedBinary(n));
+    printf("The original answer is %d\n", concatenatedBinary(n));
+    printf("The builtin answer is %d\n", using_builtin(n));
     printf("\n");
   }
   return 0;
